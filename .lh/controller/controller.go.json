@@ -1,0 +1,82 @@
+{
+    "sourceFile": "controller/controller.go",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 16,
+            "patches": [
+                {
+                    "date": 1669341444926,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1669341595900,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -66,9 +66,9 @@\n \n func GetEndpointList(c *gin.Context) {\n \ttodo, err := models.GetEndpointList()\n \tfor _, substance := range todo {\n-\t\tCheckEndpoint(substance)\n+\t\tflag := CheckEndpoint(substance)\n \t}\n \tif err != nil {\n \t\tc.JSON(http.StatusOK, gin.H{\"error\": err.Error()})\n \t} else {\n@@ -76,7 +76,7 @@\n \t}\n }\n \n //递归查询\n-func CheckEndpoint(substance model.Substance) {\n-\n+func CheckEndpoint(substance *models.Substance) flag boolean{\n+\treturn true\n }\n"
+                },
+                {
+                    "date": 1669341621719,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -76,7 +76,7 @@\n \t}\n }\n \n //递归查询\n-func CheckEndpoint(substance *models.Substance) flag boolean{\n+func CheckEndpoint(substance *models.Substance) (flag bool) {\n \treturn true\n }\n"
+                },
+                {
+                    "date": 1669343994996,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -64,19 +64,17 @@\n \t}\n }\n \n func GetEndpointList(c *gin.Context) {\n+\tvar sinfo []*models.SubstanceInfo\n \ttodo, err := models.GetEndpointList()\n \tfor _, substance := range todo {\n-\t\tflag := CheckEndpoint(substance)\n+\t\tsinfo, _ := models.CheckEndpoint(substance.Sid)\n+\t\tsinfo = append(sinfo)\n+\n \t}\n \tif err != nil {\n \t\tc.JSON(http.StatusOK, gin.H{\"error\": err.Error()})\n \t} else {\n-\t\tc.JSON(http.StatusOK, todo)\n+\t\tc.JSON(http.StatusOK, sinfo)\n \t}\n }\n-\n-//递归查询\n-func CheckEndpoint(substance *models.Substance) (flag bool) {\n-\treturn true\n-}\n"
+                },
+                {
+                    "date": 1669344338236,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -64,17 +64,17 @@\n \t}\n }\n \n func GetEndpointList(c *gin.Context) {\n-\tvar sinfo []*models.SubstanceInfo\n+\tvar sinfos []*models.SubstanceInfo\n \ttodo, err := models.GetEndpointList()\n \tfor _, substance := range todo {\n \t\tsinfo, _ := models.CheckEndpoint(substance.Sid)\n-\t\tsinfo = append(sinfo)\n+\t\tsinfos = append(sinfos, sinfo...)\n \n \t}\n \tif err != nil {\n \t\tc.JSON(http.StatusOK, gin.H{\"error\": err.Error()})\n \t} else {\n-\t\tc.JSON(http.StatusOK, sinfo)\n+\t\tc.JSON(http.StatusOK, sinfos)\n \t}\n }\n"
+                },
+                {
+                    "date": 1669346869928,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -64,17 +64,17 @@\n \t}\n }\n \n func GetEndpointList(c *gin.Context) {\n-\tvar sinfos []*models.SubstanceInfo\n \ttodo, err := models.GetEndpointList()\n-\tfor _, substance := range todo {\n-\t\tsinfo, _ := models.CheckEndpoint(substance.Sid)\n-\t\tsinfos = append(sinfos, sinfo...)\n-\n+\tfor i, substance := range todo {\n+\t\tflag := models.CheckEndpoint(substance.Sid)\n+\t\tif !flag {\n+\t\t\ttodo = append(todo[:i], todo[i+1:]...)\n+\t\t}\n \t}\n \tif err != nil {\n \t\tc.JSON(http.StatusOK, gin.H{\"error\": err.Error()})\n \t} else {\n-\t\tc.JSON(http.StatusOK, sinfos)\n+\t\tc.JSON(http.StatusOK, todo)\n \t}\n }\n"
+                },
+                {
+                    "date": 1669347273281,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -64,17 +64,18 @@\n \t}\n }\n \n func GetEndpointList(c *gin.Context) {\n+\tvar sinfo []*models.Substance\n \ttodo, err := models.GetEndpointList()\n-\tfor i, substance := range todo {\n+\tfor _, substance := range todo {\n \t\tflag := models.CheckEndpoint(substance.Sid)\n-\t\tif !flag {\n-\t\t\ttodo = append(todo[:i], todo[i+1:]...)\n+\t\tif flag {\n+\t\t\tsinfo = append(sinfo, substance)\n \t\t}\n \t}\n \tif err != nil {\n \t\tc.JSON(http.StatusOK, gin.H{\"error\": err.Error()})\n \t} else {\n-\t\tc.JSON(http.StatusOK, todo)\n+\t\tc.JSON(http.StatusOK, sinfo)\n \t}\n }\n"
+                },
+                {
+                    "date": 1669348845247,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -64,18 +64,19 @@\n \t}\n }\n \n func GetEndpointList(c *gin.Context) {\n-\tvar sinfo []*models.Substance\n+\t//var sinfo []*models.Substance\n \ttodo, err := models.GetEndpointList()\n-\tfor _, substance := range todo {\n-\t\tflag := models.CheckEndpoint(substance.Sid)\n-\t\tif flag {\n-\t\t\tsinfo = append(sinfo, substance)\n-\t\t}\n-\t}\n+\t// for _, substance := range todo {\n+\t// \tflag := models.CheckEndpoint(substance.Sid)\n+\t// \tif flag {\n+\t// \t\tsinfo = append(sinfo, substance)\n+\t// \t}\n+\t// }\n \tif err != nil {\n \t\tc.JSON(http.StatusOK, gin.H{\"error\": err.Error()})\n \t} else {\n-\t\tc.JSON(http.StatusOK, sinfo)\n+\t\tc.JSON(http.StatusOK, todo)\n+\t\t//c.JSON(http.StatusOK, sinfo)\n \t}\n }\n"
+                },
+                {
+                    "date": 1669353369908,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -64,19 +64,19 @@\n \t}\n }\n \n func GetEndpointList(c *gin.Context) {\n-\t//var sinfo []*models.Substance\n+\tvar sinfo []*models.Substance\n \ttodo, err := models.GetEndpointList()\n-\t// for _, substance := range todo {\n-\t// \tflag := models.CheckEndpoint(substance.Sid)\n-\t// \tif flag {\n-\t// \t\tsinfo = append(sinfo, substance)\n-\t// \t}\n-\t// }\n+\tfor _, substance := range todo {\n+\t\tflag := models.CheckEndpoint(substance.Sid)\n+\t\tif flag {\n+\t\t\tsinfo = append(sinfo, substance)\n+\t\t}\n+\t}\n \tif err != nil {\n \t\tc.JSON(http.StatusOK, gin.H{\"error\": err.Error()})\n \t} else {\n-\t\tc.JSON(http.StatusOK, todo)\n+\t\tc.JSON(http.StatusOK, sinfo)\n \t\t//c.JSON(http.StatusOK, sinfo)\n \t}\n }\n"
+                },
+                {
+                    "date": 1669358023732,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,9 @@\n package controller\n \n import (\n \t\"bubble/models\"\n+\t\"fmt\"\n \t\"net/http\"\n \n \t\"github.com/gin-gonic/gin\"\n )\n@@ -66,10 +67,12 @@\n \n func GetEndpointList(c *gin.Context) {\n \tvar sinfo []*models.Substance\n \ttodo, err := models.GetEndpointList()\n-\tfor _, substance := range todo {\n+\tfor i, substance := range todo {\n \t\tflag := models.CheckEndpoint(substance.Sid)\n+\t\tfmt.Println(i)\n+\t\tfmt.Println(flag)\n \t\tif flag {\n \t\t\tsinfo = append(sinfo, substance)\n \t\t}\n \t}\n"
+                },
+                {
+                    "date": 1669358078970,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -67,12 +67,11 @@\n \n func GetEndpointList(c *gin.Context) {\n \tvar sinfo []*models.Substance\n \ttodo, err := models.GetEndpointList()\n-\tfor i, substance := range todo {\n+\tfor _, substance := range todo {\n \t\tflag := models.CheckEndpoint(substance.Sid)\n-\t\tfmt.Println(i)\n-\t\tfmt.Println(flag)\n+\t\tfmt.Println(substance.Sid + \"-------------\" + flag)\n \t\tif flag {\n \t\t\tsinfo = append(sinfo, substance)\n \t\t}\n \t}\n"
+                },
+                {
+                    "date": 1669358106100,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -69,9 +69,11 @@\n \tvar sinfo []*models.Substance\n \ttodo, err := models.GetEndpointList()\n \tfor _, substance := range todo {\n \t\tflag := models.CheckEndpoint(substance.Sid)\n-\t\tfmt.Println(substance.Sid + \"-------------\" + flag)\n+\t\tfmt.Println(substance.Sid)\n+\t\tfmt.Println(\"-----------\")\n+\t\tfmt.Println(flag)\n \t\tif flag {\n \t\t\tsinfo = append(sinfo, substance)\n \t\t}\n \t}\n"
+                },
+                {
+                    "date": 1669362253152,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,9 +1,8 @@\n package controller\n \n import (\n \t\"bubble/models\"\n-\t\"fmt\"\n \t\"net/http\"\n \n \t\"github.com/gin-gonic/gin\"\n )\n@@ -69,11 +68,8 @@\n \tvar sinfo []*models.Substance\n \ttodo, err := models.GetEndpointList()\n \tfor _, substance := range todo {\n \t\tflag := models.CheckEndpoint(substance.Sid)\n-\t\tfmt.Println(substance.Sid)\n-\t\tfmt.Println(\"-----------\")\n-\t\tfmt.Println(flag)\n \t\tif flag {\n \t\t\tsinfo = append(sinfo, substance)\n \t\t}\n \t}\n"
+                },
+                {
+                    "date": 1669374539732,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -72,11 +72,14 @@\n \t\tif flag {\n \t\t\tsinfo = append(sinfo, substance)\n \t\t}\n \t}\n+\n+\t//整理数据\n+\tfor _, v := range sinfo {\n+\t}\n \tif err != nil {\n \t\tc.JSON(http.StatusOK, gin.H{\"error\": err.Error()})\n \t} else {\n \t\tc.JSON(http.StatusOK, sinfo)\n-\t\t//c.JSON(http.StatusOK, sinfo)\n \t}\n }\n"
+                },
+                {
+                    "date": 1669374932428,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -64,8 +64,9 @@\n \t}\n }\n \n func GetEndpointList(c *gin.Context) {\n+\tvar singleNode = []string{\"Melting point / freezing point\", \"Boiling point\", \"Density\", \"Particle size distribution (Granulometry)\", \"Vapour pressure\", \"Partition coefficient (Log Pow)\", \"Water solubility\", \"Surface tension\", \"Flash point\", \"Auto flammability\", \"Flammability\", \"Explosiveness\", \"Oxidising properties\", \"Stability in organic solvents and identity of relevant degradation products\", \"pH\", \"Dissociation constant\", \"Viscosity\", \"Carcinogenicity\"}\n \tvar sinfo []*models.Substance\n \ttodo, err := models.GetEndpointList()\n \tfor _, substance := range todo {\n \t\tflag := models.CheckEndpoint(substance.Sid)\n"
+                },
+                {
+                    "date": 1669375058363,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -64,9 +64,9 @@\n \t}\n }\n \n func GetEndpointList(c *gin.Context) {\n-\tvar singleNode = []string{\"Melting point / freezing point\", \"Boiling point\", \"Density\", \"Particle size distribution (Granulometry)\", \"Vapour pressure\", \"Partition coefficient (Log Pow)\", \"Water solubility\", \"Surface tension\", \"Flash point\", \"Auto flammability\", \"Flammability\", \"Explosiveness\", \"Oxidising properties\", \"Stability in organic solvents and identity of relevant degradation products\", \"pH\", \"Dissociation constant\", \"Viscosity\", \"Carcinogenicity\"}\n+\tvar singleNode = []interface{}{\"Melting point / freezing point\", \"Boiling point\", \"Density\", \"Particle size distribution (Granulometry)\", \"Vapour pressure\", \"Partition coefficient (Log Pow)\", \"Water solubility\", \"Surface tension\", \"Flash point\", \"Auto flammability\", \"Flammability\", \"Explosiveness\", \"Oxidising properties\", \"Stability in organic solvents and identity of relevant degradation products\", \"pH\", \"Dissociation constant\", \"Viscosity\", \"Carcinogenicity\"}\n \tvar sinfo []*models.Substance\n \ttodo, err := models.GetEndpointList()\n \tfor _, substance := range todo {\n \t\tflag := models.CheckEndpoint(substance.Sid)\n@@ -76,8 +76,11 @@\n \t}\n \n \t//整理数据\n \tfor _, v := range sinfo {\n+\t\tif models.inArray(v.info_key, singleNode) {\n+\n+\t\t}\n \t}\n \tif err != nil {\n \t\tc.JSON(http.StatusOK, gin.H{\"error\": err.Error()})\n \t} else {\n"
+                },
+                {
+                    "date": 1669375122575,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -76,10 +76,10 @@\n \t}\n \n \t//整理数据\n \tfor _, v := range sinfo {\n-\t\tif models.inArray(v.info_key, singleNode) {\n-\n+\t\tif models.InArray(v.Info_key, singleNode) {\n+\t\t\tv.Info_value = v.Info_key\n \t\t}\n \t}\n \tif err != nil {\n \t\tc.JSON(http.StatusOK, gin.H{\"error\": err.Error()})\n"
+                }
+            ],
+            "date": 1669341444926,
+            "name": "Commit-0",
+            "content": "package controller\n\nimport (\n\t\"bubble/models\"\n\t\"net/http\"\n\n\t\"github.com/gin-gonic/gin\"\n)\n\nfunc IndexHandler(c *gin.Context) {\n\tc.HTML(http.StatusOK, \"index.html\", nil)\n}\n\nfunc CreateTodo(c *gin.Context) {\n\t//1 从请求中取数据\n\tvar todo models.Todo\n\tc.BindJSON(&todo)\n\t//2 存入数据库\n\terr := models.CreateTodo(&todo)\n\tif err != nil {\n\t\tc.JSON(http.StatusOK, gin.H{\"error\": err.Error()})\n\t} else {\n\t\tc.JSON(http.StatusOK, todo)\n\t}\n}\n\nfunc GetTodoList(c *gin.Context) {\n\ttodo, err := models.GetTodoList()\n\tif err != nil {\n\t\tc.JSON(http.StatusOK, gin.H{\"error\": err.Error()})\n\t} else {\n\t\tc.JSON(http.StatusOK, todo)\n\t}\n}\n\nfunc UpdateTodo(c *gin.Context) {\n\t//获取id\n\tvar id, ok = c.Params.Get(\"id\")\n\tif !ok {\n\t\tc.JSON(http.StatusOK, gin.H{\"error\": \"无效的id\"})\n\t\treturn\n\t}\n\ttodo := make(map[string]interface{})\n\tc.BindJSON(&todo)\n\tif err := models.UpdateTodo(todo, id); err != nil {\n\t\tc.JSON(http.StatusOK, gin.H{\"error\": err.Error()})\n\t} else {\n\t\tc.JSON(http.StatusOK, todo)\n\t}\n}\n\nfunc DeleteTodo(c *gin.Context) {\n\t//获取id\n\tvar id, ok = c.Params.Get(\"id\")\n\tif !ok {\n\t\tc.JSON(http.StatusOK, gin.H{\"error\": \"无效的id\"})\n\t\treturn\n\t}\n\n\tif err := models.DeleteTodo(id); err != nil {\n\t\tc.JSON(http.StatusOK, gin.H{\"error\": err.Error()})\n\t} else {\n\t\tc.JSON(http.StatusOK, gin.H{\"id\": id})\n\t}\n}\n\nfunc GetEndpointList(c *gin.Context) {\n\ttodo, err := models.GetEndpointList()\n\tfor _, substance := range todo {\n\t\tCheckEndpoint(substance)\n\t}\n\tif err != nil {\n\t\tc.JSON(http.StatusOK, gin.H{\"error\": err.Error()})\n\t} else {\n\t\tc.JSON(http.StatusOK, todo)\n\t}\n}\n\n//递归查询\nfunc CheckEndpoint(substance model.Substance) {\n\n}\n"
+        }
+    ]
+}

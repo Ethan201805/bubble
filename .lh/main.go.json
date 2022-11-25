@@ -1,0 +1,18 @@
+{
+    "sourceFile": "main.go",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1669361690304,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1669361690304,
+            "name": "Commit-0",
+            "content": "package main\n\nimport (\n\t\"bubble/dao\"\n\t\"bubble/routers\"\n)\n\nfunc main() {\n\t//连接数据库\n\terr := dao.InitMysql()\n\tif err != nil {\n\t\tpanic(err)\n\t}\n\t//关闭数据库\n\tdefer dao.Close()\n\t//模型绑定\n\t//dao.DB.AutoMigrate(&models.Todo{})\n\t//注册路由\n\tr := routers.SetupRouter()\n\tr.Run(\":9091\")\n}\n"
+        }
+    ]
+}
